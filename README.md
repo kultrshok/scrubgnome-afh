@@ -15,7 +15,13 @@ Scrubgnome Away from Home (AFH) is the Android sidekick to desktop
 Optional: **Listen for hidden tracking tones.** Twig scans the audio for inaudible
 "ultrasonic beacon" signals (17.5–22 kHz) and warns you if he hears any.
 
-**Privacy promise:** the app has **no internet permission at all**. Android won't let it
+**Two flavours, same brain:**
+- **Android app** (below): install the APK.
+- **Web version for iPhone / any browser** (`web/`): open the page in Safari, tap *Share → Add to Home Screen*,
+  and it works like an app, even offline. It reads the video locally and never uploads it; the page's
+  security policy forbids it from sending data anywhere.
+
+**Privacy promise:** the Android app has **no internet permission at all**. Android won't let it
 talk to the network even if it wanted to. Everything happens on your phone.
 
 ---
@@ -26,6 +32,20 @@ talk to the network even if it wanted to. Everything happens on your phone.
    Tagged versions also show up under **Releases**.
 2. Copy the APK to your phone and tap it. Android will ask you to allow installs from that app (Files/Chrome). Allow it once.
 3. Requires **Android 10 or newer**.
+
+## iPhone / web version
+
+1. Open the web app's address in Safari (published from this repo via GitHub Pages once the repo is public;
+   see `.github/workflows/pages.yml`).
+2. Tap **Share → Add to Home Screen**. Twig gets his own icon and works offline after the first visit.
+3. **Pick a video** → choose **Browse** to pick from Files (that hands over the untouched original; the
+   Photo Library option may give a re-compressed copy).
+4. **Scrub & save clean copy** → **Save / share** → **Save Video** puts the clean copy in Photos.
+
+How it stays light on memory: it never loads the whole video. It reads only the small header boxes,
+then stitches the clean copy together from untouched slices of the original plus tiny patches. The tone
+check pulls out only the audio frames and lets Safari decode those. The JavaScript scrubber produces
+byte-for-byte the same output as the Android (Java) one.
 
 ## What gets removed
 
@@ -71,9 +91,10 @@ remove tones; use desktop Scrubgnome's audio cleaning for that.
 **Android Studio:** *File → Open* this folder, wait for Gradle sync, press ▶ with your phone plugged in
 (USB debugging on).
 
-**Desktop self-test of the scrubber core** (needs Java 17+ and ffmpeg):
+**Desktop self-tests** (Android core needs Java 17+, web version needs Node 22+; both need ffmpeg):
 ```
 bash tools/selftest.sh
+bash tools/web-selftest.sh
 ```
 
 ## Project layout
@@ -84,7 +105,13 @@ app/src/main/java/com/kultrshok/scrubgnome/
 ├── core/UltrasonicAnalyzer.java  ← the tone detector (pure Java, no Android; reusable module)
 ├── AudioToneScanner.java         ← Android audio decoder that feeds the analyzer
 └── MainActivity.java             ← the one-screen UI (Twig's voice lives here)
-tools/                            ← desktop self-test
+web/
+├── index.html                    ← the web/iPhone app (one screen)
+├── js/scrubber.js                ← JS port of the scrubber (lazy, streams from the File)
+├── js/tone.js                    ← JS port of the tone detector + AAC audio extractor
+├── js/app.js                     ← UI glue, Twig's voice
+└── sw.js, manifest.webmanifest   ← offline + Add to Home Screen
+tools/                            ← self-tests
 ```
 No third-party libraries. The two `core/` classes drop straight into any Java/Kotlin project.
 
