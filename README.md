@@ -17,7 +17,7 @@ Optional: **Listen for hidden tracking tones.** Twig scans the audio for inaudib
 
 **Two flavours, same brain:**
 - **Android app** (below): install the APK.
-- **Web version for iPhone / any browser** (`web/`): open the page in Safari, tap *Share → Add to Home Screen*,
+- **Web version for iPhone / any browser** ([kultrshok.github.io/scrubgnome-afh](https://kultrshok.github.io/scrubgnome-afh/)): open it in Safari, tap *Share → Add to Home Screen*,
   and it works like an app, even offline. It reads the video locally and never uploads it; the page's
   security policy forbids it from sending data anywhere.
 
@@ -35,8 +35,7 @@ talk to the network even if it wanted to. Everything happens on your phone.
 
 ## iPhone / web version
 
-1. Open the web app's address in Safari (published from this repo via GitHub Pages once the repo is public;
-   see `.github/workflows/pages.yml`).
+1. Open **https://kultrshok.github.io/scrubgnome-afh/** in Safari.
 2. Tap **Share → Add to Home Screen**. Twig gets his own icon and works offline after the first visit.
 3. **Pick a video** → choose **Browse** to pick from Files (that hands over the untouched original; the
    Photo Library option may give a re-compressed copy).
