@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Scrubgnome Away from Home</string>
+    <string name="share_label">Scrub with Twig</string>
+    <string name="twig_intro">Twig here, pocket edition! Hand me a video and I\'ll rip out every sneaky little tag that snitches on where, when and with what you filmed it. And nothing leaves your phone. I don\'t even HAVE internet. Great gears, the privacy!</string>
+    <string name="footer_level">Level 1 · metadata scrub (lossless, no re-encode) + hidden-tone check. Audio cleaning lives in desktop Scrubgnome.</string>
+</resources>
