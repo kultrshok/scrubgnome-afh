@@ -83,7 +83,7 @@ async function load(f) {
   } catch (e) {
     file = null;
     fail(e instanceof UnsupportedFormatError
-      ? `#@%&! ${e.message} I only operate on MP4, MOV and 3GP, s'il vous plaît.`
+      ? `#@%&! ${e.message} I only operate on MP4, MOV and 3GP, if you please.`
       : `Gah! Couldn't read that one: ${e.message}`);
   }
 }
@@ -152,7 +152,7 @@ async function doTone() {
       return;
     }
     const looks = {
-      [Level.HIGH]: ['#@%&! ', 'var(--danger)', "Aha! A beacon! Pfah, it squeaks like a rusty hamster. I can't cut it out in the pocket edition yet. Run this clip through desktop Scrubgnome's audio cleaning before posting."],
+      [Level.HIGH]: ['#@%&! ', 'var(--danger)', "Aha! A beacon! Why, it squeaks like a rusty hamster. I can't cut it out in the pocket edition yet. Run this clip through desktop Scrubgnome's audio cleaning before posting."],
       [Level.MEDIUM]: ['Hmm… ', 'var(--warn)', 'Something is chirping up there. Could be a beacon, could be a cheap phone charger. If it matters, clean the audio on the desktop version.'],
       [Level.LOW]: ['Meh. ', 'var(--info)', 'Just hiss up top. Electronics, wind, the usual gremlins. Nothing that looks like a beacon.'],
       [Level.NO_ROOM]: ['Ha! ', 'var(--accent)', 'Your phone chopped off everything above the beacon band when it recorded. Nowhere for a tracker to hide!'],

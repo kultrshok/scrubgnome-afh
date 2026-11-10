@@ -297,7 +297,7 @@ public class MainActivity extends Activity {
                     showFindings(rep, sz);
                 });
             } catch (Mp4Scrubber.UnsupportedFormatException e) {
-                fail("#@%&! " + e.getMessage() + " I only operate on MP4, MOV and 3GP, s'il vous plaît.");
+                fail("#@%&! " + e.getMessage() + " I only operate on MP4, MOV and 3GP, if you please.");
             } catch (Exception e) {
                 fail("Gah! Couldn't load that one: " + e.getMessage());
             }
@@ -441,7 +441,7 @@ public class MainActivity extends Activity {
         int color;
         switch (r.level) {
             case HIGH: prefix = "#@%&! "; color = DANGER;
-                twigSays.setText("Aha! A beacon! Pfah, it squeaks like a rusty hamster. I can't cut it out in the pocket edition yet. Run this clip through desktop Scrubgnome's audio cleaning before posting.");
+                twigSays.setText("Aha! A beacon! Why, it squeaks like a rusty hamster. I can't cut it out in the pocket edition yet. Run this clip through desktop Scrubgnome's audio cleaning before posting.");
                 break;
             case MEDIUM: prefix = "Hmm… "; color = WARN;
                 twigSays.setText("Something is chirping up there. Could be a beacon, could be a cheap phone charger. If it matters, clean the audio on the desktop version.");
