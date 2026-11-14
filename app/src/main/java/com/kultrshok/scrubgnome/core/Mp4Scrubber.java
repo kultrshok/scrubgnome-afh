@@ -226,12 +226,20 @@ public final class Mp4Scrubber {
                             case "minf":
                                 for (Box mi : children(m)) if (mi.type.equals("stbl")) stbl = mi;
                                 break;
+                            case "free":
+                            case "skip":
+                                wipeFiller(m, "trak" + trackNo + "/mdia/" + m.type);
+                                break;
                             default:
                                 if (!MDIA_KEEP.contains(m.type)) neutralize(m, "trak" + trackNo + "/mdia/" + m.type, null);
                         }
                     }
                     break;
                 }
+                case "free":
+                case "skip":
+                    wipeFiller(c, "trak" + trackNo + "/" + c.type);
+                    break;
                 default:
                     if (!TRAK_KEEP.contains(c.type)) neutralize(c, "trak" + trackNo + "/" + c.type, null);
             }

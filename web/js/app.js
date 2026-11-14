@@ -1,6 +1,6 @@
 // Scrubgnome Away from Home (web) - UI glue. Twig's voice lives here.
 // Author: kultrshok. MIT License.
-import { analyze, scrub, human, UnsupportedFormatError } from './scrubber.js';
+import { analyze, scrub, human, UnsupportedFormatError, ScrubIncompleteError } from './scrubber.js';
 import { checkTones, Level } from './tone.js';
 
 const $ = id => document.getElementById(id);
@@ -36,6 +36,7 @@ function reset() {
   file = null; cleanFile = null;
   if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
   for (const id of ['filecard', 'scrub', 'tone', 'tonecard', 'savedcard', 'preview', 'download']) show(id, false);
+  $('savedcard').classList.remove('dirty');
   $('fgeek').textContent = ''; $('tgeek').textContent = '';
   $('status').textContent = '';
   $('file').value = '';
@@ -88,32 +89,50 @@ async function load(f) {
   }
 }
 
+// Shows the result card. dirty = the verify pass still found something.
+function showResult(clean, name, mime, msg, dirty) {
+  cleanFile = new File([clean], name, { type: mime, lastModified: 0 });
+  setBusy(false);
+  show('scrub', false);
+  show('savedcard');
+  $('savedcard').classList.toggle('dirty', dirty);
+  $('saved').textContent = msg.replace('{size}', human(cleanFile.size));
+  $('share').innerHTML = dirty ? '📤&nbsp; Save copy for rechecking' : '📤&nbsp; Save / share clean copy';
+  $('download').innerHTML = dirty ? '⬇️&nbsp; Download copy for rechecking' : '⬇️&nbsp; Download clean copy';
+  previewUrl = URL.createObjectURL(cleanFile);
+  $('preview').src = previewUrl;
+  show('preview');
+  const canShare = navigator.canShare && navigator.canShare({ files: [cleanFile] });
+  show('share', !!canShare);
+  const dl = $('download');
+  dl.href = previewUrl; dl.download = name;
+  show('download', !canShare);
+}
+
 async function doScrub() {
   if (busy || !file) return;
   setBusy(true, 'Scrubbing! Zap… wipe… zero…');
+  const [ext, mime] = outputType(file);
   try {
     const { clean, report } = await scrub(file, progress);
-    const [ext, mime] = outputType(file);
     const name = `scrubbed_${randomHex(4)}${ext}`;
-    cleanFile = new File([clean], name, { type: mime, lastModified: 0 });
-    setBusy(false);
-    show('scrub', false);
-    show('savedcard');
     const bits = [`Removed ${report.boxesFreed} tag blocks`];
     if (report.tracksRemoved) bits.push(`${report.tracksRemoved} hidden data track(s)`);
     if (report.trailerRemoved) bits.push('a vendor trailer');
-    $('saved').textContent = `Double-checked: zero metadata left in ${name} (${human(cleanFile.size)}). ${bits.join(', ')}. Video and sound untouched, not one pixel re-encoded.`;
-    previewUrl = URL.createObjectURL(cleanFile);
-    $('preview').src = previewUrl;
-    show('preview');
-    const canShare = navigator.canShare && navigator.canShare({ files: [cleanFile] });
-    show('share', !!canShare);
-    const dl = $('download');
-    dl.href = previewUrl; dl.download = name;
-    show('download', !canShare);
+    showResult(clean, name, mime, `Double-checked: zero metadata left in ${name} ({size}). ${bits.join(', ')}. Video and sound untouched, not one pixel re-encoded.`, false);
     twig('Ha HA! It works! It actually works! Save it or post it. The trackers can taunt my shiny clean file all they like.');
   } catch (e) {
-    fail(`#@%&! ${e.message}. Don't post this one.`);
+    if (!(e instanceof ScrubIncompleteError)) { fail(`#@%&! ${e.message}. Don't post this one.`); return; }
+    // Keep the half-scrubbed copy so it can be fed back in and rechecked. The name says
+    // NOT_CLEAN so it never gets mistaken for a postable file in the camera roll.
+    const name = `NOT_CLEAN_recheck_${randomHex(4)}${ext}`;
+    const left = [...e.leftover.categories].join(', ');
+    showResult(e.clean, name, mime, `Partly scrubbed: ${name} ({size}). Still in there: ${left}. Do NOT post this one. Save it, then tap "Scrub another" and load it back in to recheck what's left.`, true);
+    $('fgeek').textContent += `\n\nStill found after scrubbing:\n${e.leftover.details.map(d => `› ${d}`).join('\n')}`;
+    applyGeek();
+    $('status').classList.add('err');
+    $('status').textContent = `#@%&! ${e.message}. Don't post this one.`;
+    twig("Blast! Something's clinging on like a barnacle. I've saved what I could. Keep it, feed it back to me later, and we'll see what's left.");
   }
 }
 

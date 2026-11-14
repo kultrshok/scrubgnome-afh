@@ -206,9 +206,11 @@ export async function analyze(blob, onProgress) {
           if (m.type === 'mdhd') await zeroTimes(m, `track ${trackNo} media header`);
           else if (m.type === 'hdlr') handler = await processHdlr(m);
           else if (m.type === 'minf') { for (const mi of await children(m)) if (mi.type === 'stbl') stbl = mi; }
+          else if (m.type === 'free' || m.type === 'skip') await wipeFiller(m, `trak${trackNo}/mdia/${m.type}`);
           else if (!MDIA_KEEP.has(m.type)) await neutralize(m, `trak${trackNo}/mdia/${m.type}`);
         }
-      } else if (!TRAK_KEEP.has(c.type)) await neutralize(c, `trak${trackNo}/${c.type}`);
+      } else if (c.type === 'free' || c.type === 'skip') await wipeFiller(c, `trak${trackNo}/${c.type}`);
+      else if (!TRAK_KEEP.has(c.type)) await neutralize(c, `trak${trackNo}/${c.type}`);
     }
     if (handler && !AV_HANDLERS.has(handler)) {
       const zeroed = stbl ? await wipeSamples(stbl) : 0;
@@ -329,13 +331,29 @@ export function buildClean(blob, { patches, end }, type) {
   return new Blob(parts, { type: type || blob.type || 'video/mp4' });
 }
 
-/** One call: analyze, build, verify. Throws if anything survives. */
-export async function scrub(blob, onProgress) {
-  const a = await analyze(blob, f => onProgress && onProgress(f * 0.5));
-  const clean = buildClean(blob, a);
-  const verify = await analyze(clean, f => onProgress && onProgress(0.5 + f * 0.5));
-  if (verify.report.categories.size) {
-    throw new Error(`Something survived the scrub: ${[...verify.report.categories].join(', ')}`);
+/** Thrown when the verify pass still finds something. Carries the partly-clean copy. */
+export class ScrubIncompleteError extends Error {
+  constructor(clean, report, leftover) {
+    super(`Something survived the scrub: ${[...leftover.categories].join(', ')}`);
+    this.clean = clean;        // best-effort copy: everything we COULD remove is gone
+    this.report = report;      // what the first pass removed
+    this.leftover = leftover;  // what the verify pass still found
   }
+}
+
+/**
+ * One call: analyze, build, verify. If anything survives, a second pass runs on the
+ * output (catches things the first pass uncovered); still dirty -> ScrubIncompleteError.
+ */
+export async function scrub(blob, onProgress) {
+  const a = await analyze(blob, f => onProgress && onProgress(f * 0.4));
+  let clean = buildClean(blob, a);
+  let verify = await analyze(clean, f => onProgress && onProgress(0.4 + f * 0.3));
+  if (verify.report.categories.size) {
+    clean = buildClean(clean, verify);
+    verify = await analyze(clean, f => onProgress && onProgress(0.7 + f * 0.3));
+  }
+  if (onProgress) onProgress(1);
+  if (verify.report.categories.size) throw new ScrubIncompleteError(clean, a.report, verify.report);
   return { clean, report: a.report };
 }
