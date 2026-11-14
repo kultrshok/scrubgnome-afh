@@ -24,6 +24,8 @@ Optional: **Listen for hidden tracking tones.** Twig scans the audio for inaudib
 **Privacy promise:** the Android app has **no internet permission at all**. Android won't let it
 talk to the network even if it wanted to. Everything happens on your phone.
 
+**Questions or problems?** See the [FAQ](FAQ.md) and [Bug Fixes](Bug%20Fixes.md).
+
 ---
 
 ## Install (no app store needed)
@@ -62,7 +64,8 @@ byte-for-byte the same output as the Android (Java) one.
 
 **Lossless:** nothing is re-encoded. Metadata boxes become same-size `free` boxes full of zeros,
 so every pointer in the file stays valid and the video and sound are bit-for-bit untouched.
-After scrubbing, Twig re-scans the result and refuses to save if anything survived.
+After scrubbing, Twig re-scans the result. If anything survived, the iPhone web app saves a copy named
+`NOT_CLEAN_recheck_<random>` so you can recheck it later (don't post it); the Android app refuses to save.
 
 Supported: MP4, MOV, 3GP (everything phones record). Not supported: WebM/MKV.
 
